@@ -27,59 +27,59 @@ admin.initializeApp({
 app.use(express.json())
 app.use(cors());
 
-// const verifyFBToken = async (req, res, next) => {
-//   console.log('headers in the middleware', req.headers?.authorization);
-
-//   const token = req.headers.authorization;
-
-//   if (!token) {
-//    return res.status(401).send({ message: 'unauthorized access'  })
-//   }
-
-//   try {
-//     const idToken = token.split(' ')[1];
-//     const decoded = await admin.auth().verifyIdToken(idToken)
-//     console.log('decoded in the token', decoded);
-//     req.user = decoded;
-//     next();
-
-//   } catch (err) {
-//     return res.status(401).send({ message: 'unauthorized access '})
-//   }
-
-  
-// }
-
 const verifyFBToken = async (req, res, next) => {
+  console.log('headers in the middleware', req.headers?.authorization);
 
-  console.log(req.headers);
+  const token = req.headers.authorization;
 
-  const authHeader = req.headers.authorization;
-
-if (!authHeader) {
-  return res.status(401).send({ message: 'unauthorized access' });
-}
-
+  if (!token) {
+   return res.status(401).send({ message: 'unauthorized access'  })
+  }
 
   try {
-    const token = authHeader.split(' ')[1];
-
-    if (!token) {
-      return res.status(401).send({message:'No token provided'});
-    }
-
-    const decoded = await admin.auth().verifyIdToken(token);
-
+    const idToken = token.split(' ')[1];
+    const decoded = await admin.auth().verifyIdToken(idToken)
+    console.log('decoded in the token', decoded);
     req.user = decoded;
-
     next();
 
-  } catch (error) {
-    console.log(error);
-
-    return res.status(401).send({ message: 'unauthorized access' })
+  } catch (err) {
+    return res.status(401).send({ message: 'unauthorized access '})
   }
+
+  
 }
+
+// const verifyFBToken = async (req, res, next) => {
+
+//   console.log(req.headers);
+
+//   const authHeader = req.headers.authorization;
+
+// if (!authHeader) {
+//   return res.status(401).send({ message: 'unauthorized access' });
+// }
+
+
+//   try {
+//     const token = authHeader.split(' ')[1];
+
+//     if (!token) {
+//       return res.status(401).send({message:'No token provided'});
+//     }
+
+//     const decoded = await admin.auth().verifyIdToken(token);
+
+//     req.user = decoded;
+
+//     next();
+
+//   } catch (error) {
+//     console.log(error);
+
+//     return res.status(401).send({ message: 'unauthorized access' })
+//   }
+// }
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@am.7mxwxuq.mongodb.net/?appName=AM`;
 // const uri = `mongodb://${process.env.DB_USER}:${process.env.DB_PASS}@ac-5skoi0e-shard-00-00.7mxwxuq.mongodb.net:27017,ac-5skoi0e-shard-00-01.7mxwxuq.mongodb.net:27017,ac-5skoi0e-shard-00-02.7mxwxuq.mongodb.net:27017/?ssl=true&replicaSet=atlas-lwnvca-shard-0&authSource=admin&appName=AM`;
