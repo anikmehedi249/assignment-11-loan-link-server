@@ -27,23 +27,58 @@ admin.initializeApp({
 app.use(express.json())
 app.use(cors());
 
-const verifyFBToken = async (req, res, next) => {
-  // console.log('headers in the middleware', req.headers.authorization);
-  const token = req.headers.authorization;
+// const verifyFBToken = async (req, res, next) => {
+//   console.log('headers in the middleware', req.headers?.authorization);
 
-  if (!token) {
+//   const token = req.headers.authorization;
+
+//   if (!token) {
+//    return res.status(401).send({ message: 'unauthorized access'  })
+//   }
+
+//   try {
+//     const idToken = token.split(' ')[1];
+//     const decoded = await admin.auth().verifyIdToken(idToken)
+//     console.log('decoded in the token', decoded);
+//     req.user = decoded;
+//     next();
+
+//   } catch (err) {
+//     return res.status(401).send({ message: 'unauthorized access '})
+//   }
+
+  
+// }
+
+const verifyFBToken = async (req, res, next) => {
+
+  console.log(req.headers);
+
+  const authHeader = req.headers.authorization;
+
+if (!authHeader) {
+  return res.status(401).send({ message: 'unauthorized access' });
+}
+
+
+  try {
+    const token = authHeader.split(' ')[1];
+
+    if (!token) {
+      return res.status(401).send({message:'No token provided'});
+    }
+
+    const decoded = await admin.auth().verifyIdToken(token);
+
+    req.user = decoded;
+
+    next();
+
+  } catch (error) {
+    console.log(error);
+
     return res.status(401).send({ message: 'unauthorized access' })
   }
-  try {
-    const idToken = token.split(' ')[1]
-    const decoded = await admin.auth().verifyIdToken(idToken)
-    // console.log('decoded in the token', decoded);
-    req.user = decoded;
-    next()
-  } catch (error) {
-    return res.status(401).send({ message: 'unauthorize access' })
-  }
-
 }
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@am.7mxwxuq.mongodb.net/?appName=AM`;
@@ -216,7 +251,7 @@ async function run() {
 
 
 
-    app.get('/loans', async (req, res) => {
+    app.get('/loans',  async (req, res) => {
 
       const cursor = loansCollection.find()
       const result = await cursor.toArray();
@@ -487,7 +522,7 @@ async function run() {
 
     app.get('/my-loans/:id', verifyFBToken, async(req,res)=>{
       const id = req.params.id
-      const email = req.decoded.email;
+      const email = req.user.email;
       const query = {_id: new ObjectId(id)}
       const result = await loanApplicationCollection.findOne(query)
       if(!result){
@@ -623,6 +658,16 @@ async function run() {
 
       const payment = await paymentCollection.find({email}).toArray()
       res.send(payment)
+    })
+
+    app.get('/loan', verifyFBToken, async (req, res) => {
+
+      const email = req.query.email;
+
+      const query = email ? {email} : {}
+      const cursor = loanApplicationCollection.find(query)
+      const result = await cursor.toArray();
+      res.send(result)
     })
 
 
